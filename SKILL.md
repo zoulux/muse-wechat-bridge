@@ -2,6 +2,8 @@
 
 Operate the user's WeChat as a two way channel through the OpenClaw weixin plugin. Outbound messages go through a Node send script that calls the plugin API. Inbound messages land in a local sqlite database that you poll with a watermark. A watchdog keeps the gateway process alive.
 
+Setting up from zero? Follow SETUP.md (Chinese) or SETUP.en.md (English) first, then come back here for day-to-day operation.
+
 ## Send a message
 
 - Send text with `node ~/workspace/tools/weixin-send.mjs "message text"`. Append a user id as second argument to target someone other than the default account owner.
