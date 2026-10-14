@@ -1,73 +1,73 @@
 # muse-wechat-bridge
 
-[English version](README.en.md)
+[中文版](README.zh-CN.md)
 
-把微信变成 Muse 的双向通道：通过 OpenClaw 的微信插件（`@tencent-weixin/openclaw-weixin`）收发微信消息、做网关保活、轮询新消息。
+Turn WeChat into a two-way channel for Muse: send and receive WeChat messages through OpenClaw's weixin plugin (`@tencent-weixin/openclaw-weixin`), with gateway health checks and inbound polling.
 
-这是从一套真实跑通的配置里沉淀出来的 skill，包含发消息脚本、轮询方法、看门狗脚本，以及几个真实踩过的坑。
+This skill was distilled from a real working setup. It ships send scripts, a polling method, a watchdog script, and several lessons learned the hard way.
 
-## 这是什么
+## What it does
 
-- **发消息**：用 Node 脚本调用插件 API，把文本 / 图片发到微信
-- **收消息**：插件把收到的消息写入本地 sqlite，用水位文件轮询新消息
-- **保活**：定时检查网关健康，挂了自动重启
-- **排障**：整理了单链路、空结果误判、插件升级覆盖补丁等真实教训
+- **Send**: call the plugin API from Node scripts to deliver text and images to WeChat
+- **Receive**: the plugin writes inbound messages to a local sqlite database, polled with a watermark file
+- **Stay alive**: check gateway health on a schedule and restart it automatically on failure
+- **Troubleshoot**: documents real pitfalls such as duplicate inbound paths, empty-result misreads, and plugin upgrades wiping patches
 
-## 仓库结构
+## Repository layout
 
 ```
 muse-wechat-bridge/
-├── SKILL.md                  # skill 正文：发 / 收 / 保活 / 排障四部分
-├── skill.yaml                # skill 元信息（名称、描述、分类）
+├── SKILL.md                  # the skill: send / receive / keep-alive / troubleshoot
+├── skill.yaml                # skill metadata (name, description, category)
 ├── scripts/
-│   ├── weixin-send.mjs       # 发文本消息
-│   ├── weixin-send-image.mjs # 发图片消息
-│   └── gateway-watchdog.sh   # 网关看门狗
-├── README.md                 # 本文件（中文）
-└── README.en.md              # 英文版说明
+│   ├── weixin-send.mjs       # send a text message
+│   ├── weixin-send-image.mjs # send an image message
+│   └── gateway-watchdog.sh   # gateway watchdog
+├── README.md                 # Chinese readme
+└── README.en.md              # this file
 ```
 
-## 前置条件
+## Prerequisites
 
-- 已安装 OpenClaw，并装好 `@tencent-weixin/openclaw-weixin` 插件
-- 插件已完成微信扫码绑定，`~/.openclaw/openclaw-weixin/accounts/` 下有账号配置文件
-- Node.js 可用
+- OpenClaw installed with the `@tencent-weixin/openclaw-weixin` plugin
+- WeChat account bound via QR scan, with account config files under `~/.openclaw/openclaw-weixin/accounts/`
+- Node.js available
 
-## 快速开始
+## Quick start
 
-发一条文本消息：
+Send a text message:
 
 ```bash
-node scripts/weixin-send.mjs "你好，这是测试消息"
+node scripts/weixin-send.mjs "Hello from the bridge"
 ```
 
-发一张图片：
+Send an image:
 
 ```bash
-node scripts/weixin-send-image.mjs "/path/to/photo.jpg" "配文"
+node scripts/weixin-send-image.mjs "/path/to/photo.jpg" "caption"
 ```
 
-多账号时用环境变量指定账号：
+Pick an account explicitly when you have more than one:
 
 ```bash
 WEIXIN_ACCOUNT_ID=your-account-id node scripts/weixin-send.mjs "hi"
 ```
 
-检查网关是否存活：
+Check the gateway:
 
 ```bash
 curl -s -m 10 http://127.0.0.1:18789/health
 ```
 
-跑看门狗（建议用 cron 每 2 分钟跑一次）：
+Run the watchdog (every 2 minutes via cron works well):
 
 ```bash
 bash scripts/gateway-watchdog.sh
 ```
 
-## 轮询新消息
+## Polling for inbound messages
 
-插件收到消息后写入 `~/.openclaw/openclaw-weixin/ref-messages.sqlite` 的 `quote_messages` 表。用水位文件记录已处理的最大 `created_at`（毫秒时间戳），每次只查更大的：
+Inbound messages land in the `quote_messages` table of `~/.openclaw/openclaw-weixin/ref-messages.sqlite`. Track the largest processed `created_at` (millisecond timestamp) in a watermark file and only fetch newer rows:
 
 ```sql
 SELECT conversation_id, message_id, direction, body, created_at
@@ -76,12 +76,12 @@ WHERE direction = 'inbound' AND created_at > <watermark>
 ORDER BY created_at ASC;
 ```
 
-注意：`sqlite3 -json` 查不到结果时输出为空或 `[]`，必须当作"无新消息"，不要发确认、不要动水位文件。
+Heads up: `sqlite3 -json` returns empty output or `[]` when there is nothing new. Treat that as "no new messages": do not send an acknowledgement and do not touch the watermark file.
 
-## 隐私说明
+## Privacy
 
-本仓库不包含任何账号 ID、token、会话 ID 或其他个人信息。脚本里的账号 ID 改为自动发现（环境变量或账号目录），敏感凭证只在运行时从本地文件读取，绝不写进代码或日志。
+This repository contains no account ids, tokens, conversation ids, or any other personal information. The scripts resolve the account id automatically (environment variable or account directory), and credentials are only read from local files at runtime, never baked into code or logs.
 
-## 许可证
+## License
 
 MIT
