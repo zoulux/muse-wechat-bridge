@@ -6,6 +6,8 @@
 
 这是从一套真实跑通的配置里沉淀出来的 skill，包含发消息脚本、轮询方法、看门狗脚本，以及几个真实踩过的坑。
 
+第一次用？先看[冷启动指南](SETUP.md)，从零跑通。
+
 ## 这是什么
 
 - **发消息**：用 Node 脚本调用插件 API，把文本 / 图片发到微信
@@ -23,8 +25,10 @@ muse-wechat-bridge/
 │   ├── weixin-send.mjs       # 发文本消息
 │   ├── weixin-send-image.mjs # 发图片消息
 │   └── gateway-watchdog.sh   # 网关看门狗
-├── README.md                 # 本文件（中文）
-└── README.en.md              # 英文版说明
+├── README.md                 # 英文版说明（默认）
+├── README.zh-CN.md            # 本文件（中文）
+├── SETUP.md                  # 冷启动指南（中文）
+└── SETUP.en.md               # 冷启动指南（英文）
 ```
 
 ## 前置条件
