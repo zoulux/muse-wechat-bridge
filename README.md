@@ -6,6 +6,8 @@ Turn WeChat into a two-way channel for Muse: send and receive WeChat messages th
 
 This skill was distilled from a real working setup. It ships send scripts, a polling method, a watchdog script, and several lessons learned the hard way.
 
+New here? Start with the [Setup Guide](SETUP.en.md) to get the bridge running from zero.
+
 ## What it does
 
 - **Send**: call the plugin API from Node scripts to deliver text and images to WeChat
@@ -23,8 +25,10 @@ muse-wechat-bridge/
 │   ├── weixin-send.mjs       # send a text message
 │   ├── weixin-send-image.mjs # send an image message
 │   └── gateway-watchdog.sh   # gateway watchdog
-├── README.md                 # Chinese readme
-└── README.en.md              # this file
+├── README.md                 # this file (English)
+├── README.zh-CN.md            # Chinese readme
+├── SETUP.en.md               # setup guide (English)
+└── SETUP.md                  # setup guide (Chinese)
 ```
 
 ## Prerequisites
