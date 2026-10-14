@@ -1,0 +1,5 @@
+name: "wechat_bridge"
+title: "WeChat Bridge via OpenClaw"
+description: "Send and receive WeChat messages through the OpenClaw weixin plugin channel, including gateway health checks and inbound polling."
+category: "Work and knowledge"
+include_in_prompt: false
